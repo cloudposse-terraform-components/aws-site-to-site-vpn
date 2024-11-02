@@ -1,70 +1,147 @@
-name: "template"
-
+name: "aws-site-to-site-vpn"
 # Canonical GitHub repo
-github_repo: "cloudposse-terraform-components/template"
-
+github_repo: "cloudposse-terraform-components/aws-site-to-site-vpn"
 # Short description of this project
 description: |-
-  Description of this component
+  This component provisions a [Site-To-Site VPN](https://aws.amazon.com/vpn/site-to-site-vpn/) with a target AWS VPC on
+  one side of the tunnel. The other (customer) side can be any VPN gateway endpoint, e.g. a hardware device, other cloud
+  VPN, etc.
 
-usage: |-
-  **Stack Level**: Regional or Test47
+  AWS Site-to-Site VPN is a fully-managed service that creates a secure connection between your data center or branch
+  office and your AWS resources using IP Security (IPSec) tunnels. When using Site-to-Site VPN, you can connect to both
+  your Amazon Virtual Private Clouds (VPC) and AWS Transit Gateway, and two tunnels per connection are used for increased
+  redundancy.
 
-  Here's an example snippet for how to use this component.
-  
+  The component provisions the following resources:
+
+  - AWS Virtual Private Gateway (a representation of the AWS side of the tunnel)
+
+  - AWS Customer Gateway (a representation of the other (remote) side of the tunnel). It requires:
+
+    - The gateway's Border Gateway Protocol (BGP) Autonomous System Number (ASN)
+    - `/32` IP of the VPN endpoint
+
+  - AWS Site-To-Site VPN connection. It creates two VPN tunnels for redundancy and requires:
+
+    - The IP CIDR ranges on each side of the tunnel
+    - Pre-shared Keys for each tunnel (can be auto-generated if not provided and saved into SSM Parameter Store)
+    - (Optional) IP CIDR ranges to be used inside each VPN tunnel
+
+  - Route table entries to direct the appropriate traffic from the local VPC to the other side of the tunnel
+
+  ## Post-tunnel creation requirements
+
+  Once the site-to-site VPN resources are deployed, you need to send the VPN configuration from AWS side to the
+  administrator of the remote side of the VPN connection. To do this:
+
+  1. Determine the infrastructure that will be used for the remote side, specifically:
+
+  - Vendor
+  - Platform
+  - Software Version
+  - IKE version
+
+  1. Log into the target AWS account
+  1. Go to the "VPC" console
+  1. On the left navigation manu, go to `Virtual Private Network` > `Site-to-Site VPN Connections`
+  1. Select the VPN connection that was created via this component
+  1. On the top right, click the `Download Configuration` button
+  1. Enter the information you obtained and click `Download`
+  1. Send the configuration file to the administrator of the remote side of the tunnel
+
+  ## Usage
+
+  **Stack Level**: Regional
+
   ```yaml
   components:
     terraform:
-      foo:
+      site-to-site-vpn:
+        metadata:
+          component: site-to-site-vpn
         vars:
           enabled: true
+          name: "site-to-site-vpn"
+          vpc_component_name: vpc
+          customer_gateway_bgp_asn: 65000
+          customer_gateway_ip_address: 20.200.30.0
+          vpn_gateway_amazon_side_asn: 64512
+          vpn_connection_static_routes_only: true
+          vpn_connection_tunnel1_inside_cidr: 169.254.20.0/30
+          vpn_connection_tunnel2_inside_cidr: 169.254.21.0/30
+          vpn_connection_local_ipv4_network_cidr: 10.100.128.0/24
+          vpn_connection_remote_ipv4_network_cidr: 10.10.80.0/24
+          vpn_connection_static_routes_destinations:
+            - 10.100.128.0/24
+          vpn_connection_tunnel1_startup_action: add
+          vpn_connection_tunnel2_startup_action: add
+          transit_gateway_enabled: false
+          vpn_connection_tunnel1_cloudwatch_log_enabled: false
+          vpn_connection_tunnel2_cloudwatch_log_enabled: false
+          preshared_key_enabled: true
+          ssm_enabled: true
+          ssm_path_prefix: "/site-to-site-vpn"
   ```
 
+  ## Amazon side Autonomous System Number (ASN)
+
+  The variable `vpn_gateway_amazon_side_asn` (Amazon side Autonomous System Number) is not strictly required when creating
+  an AWS VPN Gateway. If you do not specify Amazon side ASN during the creation of the VPN Gateway, AWS will automatically
+  assign a default ASN (which is 7224 for the Amazon side of the VPN).
+
+  However, specifying Amazon side ASN can be important if you need to integrate the VPN with an on-premises network that
+  uses Border Gateway Protocol (BGP) and you want to avoid ASN conflicts or require a specific ASN for routing policies.
+
+  If your use case involves BGP peering, and you need a specific ASN for the Amazon side, then you should explicitly set
+  the `vpn_gateway_amazon_side_asn`. Otherwise, it can be omitted (set to `null`), and AWS will handle it automatically.
+
+  ## Provisioning
+
+  Provision the `site-to-site-vpn` component by executing the following commands:
+
+  ```sh
+  atmos terraform plan site-to-site-vpn -s <stack>
+  atmos terraform apply site-to-site-vpn -s <stack>
+  ```
+
+  ## References
+
+  - https://aws.amazon.com/vpn/site-to-site-vpn
+  - https://docs.aws.amazon.com/vpn/latest/s2svpn/VPC_VPN.html
+  - https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_VpnTunnelOptionsSpecification.html
+
+  <!-- prettier-ignore-start -->
+
+  <!-- prettier-ignore-end -->
+
+  - [cloudposse/terraform-aws-components](https://github.com/cloudposse/terraform-aws-components/tree/main/modules/site-to-site-vpn) -
+    Cloud Posse's upstream component
 include:
   - "docs/terraform.md"
-
 tags:
-  - terraform
-  - terraform-modules
-  - aws
-  - components
-  - terraform-components
-  - root
-  - geodesic
-  - reference-implementation
-  - reference-architecture
-
+  - component/site-to-site-vpn
+  - layer/network
+  - provider/aws
 # Categories of this project
 categories:
-  - terraform-modules/root
-  - terraform-components
-
+  - component/site-to-site-vpn
+  - layer/network
+  - provider/aws
 # License of this project
 license: "APACHE2"
-
 # Badges to display
 badges:
-  - name: "Latest Release"
-    image: "https://img.shields.io/github/release/cloudposse-terraform-components/template.svg?style=for-the-badge"
-    url: "https://github.com/cloudposse-terraform-components/template/releases/latest"
-  - name: "Slack Community"
-    image: "https://slack.cloudposse.com/for-the-badge.svg"
-    url: "https://slack.cloudposse.com"
-
-references:
-  - name: "Cloud Posse Documentation"
-    description: "Complete documentation for the Cloud Posse solution"
-    url: "https://docs.cloudposse.com"
-  - name: "Reference Architectures"
-    description: "Launch effortlessly with our turnkey reference architectures, built either by your team or ours."
-    url: "https://cloudposse.com/"
-
+  - name: Latest Release
+    image: https://img.shields.io/github/release/cloudposse-terraform-components/aws-site-to-site-vpn.svg?style=for-the-badge
+    url: https://github.com/cloudposse-terraform-components/aws-site-to-site-vpn/releases/latest
+  - name: Slack Community
+    image: https://slack.cloudposse.com/for-the-badge.svg
+    url: https://slack.cloudposse.com
 related:
-- name: "Cloud Posse Terraform Modules"
-  description: Our collection of reusable Terraform modules used by our reference architectures.
-  url: "https://docs.cloudposse.com/modules/"
-- name: "Atmos"
-  description: "Atmos is like docker-compose but for your infrastructure"
-  url: "https://atmos.tools"
-
+  - name: "Cloud Posse Terraform Modules"
+    description: Our collection of reusable Terraform modules used by our reference architectures.
+    url: "https://docs.cloudposse.com/modules/"
+  - name: "Atmos"
+    description: "Atmos is like docker-compose but for your infrastructure"
+    url: "https://atmos.tools"
 contributors: [] # If included generates contribs
