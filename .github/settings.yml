@@ -2,6 +2,6 @@
 _extends: .github
 repository:
   name: aws-site-to-site-vpn
-  description: This component provisions a [Site-To-Site VPN](https://aws
+  description: This component provisions a Site-To-Site VPN with a target AWS VPC on one side of the tunnel
   homepage: https://cloudposse.com/accelerate
   topics: terraform, terraform-component
