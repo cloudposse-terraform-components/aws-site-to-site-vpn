@@ -1,0 +1,7 @@
+# Upstream changes from _extends are only recognized when modifications are made to this file in the default branch.
+_extends: .github
+repository:
+  name: aws-site-to-site-vpn
+  description: This component provisions a Site-To-Site VPN with a target AWS VPC on one side of the tunnel
+  homepage: https://cloudposse.com/accelerate
+  topics: terraform, terraform-component
