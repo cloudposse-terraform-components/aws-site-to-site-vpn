@@ -5,7 +5,7 @@ tags:
   - provider/aws
 ---
 
-# Component: `site`
+# Component: `site-to-site-vpn`
 
 This component provisions a [Site-To-Site VPN](https://aws.amazon.com/vpn/site-to-site-vpn/) with a target AWS VPC on
 one side of the tunnel. The other (customer) side can be any VPN gateway endpoint, e.g. a hardware device, other cloud
