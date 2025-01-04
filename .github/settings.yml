@@ -5,5 +5,3 @@ repository:
   description: This component provisions a Site-To-Site VPN with a target AWS VPC on one side of the tunnel
   homepage: https://cloudposse.com/accelerate
   topics: terraform, terraform-component
-
-
