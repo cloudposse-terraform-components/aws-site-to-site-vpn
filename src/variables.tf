@@ -127,7 +127,8 @@ variable "vpn_connection_tunnel1_phase2_dh_group_numbers" {
 variable "vpn_connection_tunnel1_preshared_key" {
   type        = string
   description = "The preshared key of the first VPN tunnel. The preshared key must be between 8 and 64 characters in length and cannot start with zero. Allowed characters are alphanumeric characters, periods(.) and underscores(_)"
-  default     = null
+  default     = ""
+  nullable    = false
 }
 
 variable "vpn_connection_tunnel1_startup_action" {
@@ -216,7 +217,8 @@ variable "vpn_connection_tunnel2_phase2_dh_group_numbers" {
 variable "vpn_connection_tunnel2_preshared_key" {
   type        = string
   description = "The preshared key of the second VPN tunnel. The preshared key must be between 8 and 64 characters in length and cannot start with zero. Allowed characters are alphanumeric characters, periods(.) and underscores(_)"
-  default     = null
+  default     = ""
+  nullable    = false
 }
 
 variable "vpn_connection_tunnel2_startup_action" {
