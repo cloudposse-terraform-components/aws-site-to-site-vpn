@@ -32,30 +32,11 @@ The component provisions the following resources:
   - (Optional) IP CIDR ranges to be used inside each VPN tunnel
 
 - Route table entries to direct the appropriate traffic from the local VPC to the other side of the tunnel
-
-## Post-tunnel creation requirements
-
-Once the site-to-site VPN resources are deployed, you need to send the VPN configuration from AWS side to the
-administrator of the remote side of the VPN connection. To do this:
-
-1. Determine the infrastructure that will be used for the remote side, specifically:
-
-- Vendor
-- Platform
-- Software Version
-- IKE version
-
-1. Log into the target AWS account
-1. Go to the "VPC" console
-1. On the left navigation manu, go to `Virtual Private Network` > `Site-to-Site VPN Connections`
-1. Select the VPN connection that was created via this component
-1. On the top right, click the `Download Configuration` button
-1. Enter the information you obtained and click `Download`
-1. Send the configuration file to the administrator of the remote side of the tunnel
-
 ## Usage
 
-**Stack Level**: Regional
+Stack Level: Regional
+
+Example configuration:
 
 ```yaml
 components:
@@ -87,35 +68,38 @@ components:
         ssm_path_prefix: "/site-to-site-vpn"
 ```
 
-## Amazon side Autonomous System Number (ASN)
-
-The variable `vpn_gateway_amazon_side_asn` (Amazon side Autonomous System Number) is not strictly required when creating
-an AWS VPN Gateway. If you do not specify Amazon side ASN during the creation of the VPN Gateway, AWS will automatically
-assign a default ASN (which is 7224 for the Amazon side of the VPN).
-
-However, specifying Amazon side ASN can be important if you need to integrate the VPN with an on-premises network that
-uses Border Gateway Protocol (BGP) and you want to avoid ASN conflicts or require a specific ASN for routing policies.
-
-If your use case involves BGP peering, and you need a specific ASN for the Amazon side, then you should explicitly set
-the `vpn_gateway_amazon_side_asn`. Otherwise, it can be omitted (set to `null`), and AWS will handle it automatically.
-
-## Provisioning
-
-Provision the `site-to-site-vpn` component by executing the following commands:
+Provisioning:
 
 ```sh
 atmos terraform plan site-to-site-vpn -s <stack>
 atmos terraform apply site-to-site-vpn -s <stack>
 ```
 
-## References
+Post-tunnel creation requirements:
 
-- https://aws.amazon.com/vpn/site-to-site-vpn
-- https://docs.aws.amazon.com/vpn/latest/s2svpn/VPC_VPN.html
-- https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_VpnTunnelOptionsSpecification.html
+Once the site-to-site VPN resources are deployed, send the VPN configuration from the AWS side to the
+administrator of the remote side of the VPN connection. To do this:
 
-<!-- prettier-ignore-start -->
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+1. Determine the infrastructure that will be used for the remote side, specifically vendor, platform, software version, and IKE version.
+2. Log into the target AWS account and open the VPC console.
+3. Navigate to `Virtual Private Network` > `Site-to-Site VPN Connections`.
+4. Select the VPN connection that was created via this component.
+5. Click `Download Configuration` (top right).
+6. Enter the information you obtained and click `Download`.
+7. Send the configuration file to the administrator of the remote side of the tunnel.
+
+Amazon side Autonomous System Number (ASN):
+
+The variable `vpn_gateway_amazon_side_asn` (Amazon side ASN) is not strictly required when creating an AWS VPN Gateway.
+If you do not specify it during creation, AWS will automatically assign a default ASN (7224 for the Amazon side).
+
+Specifying the Amazon side ASN can be important if you integrate the VPN with an on-premises network that uses BGP and
+you want to avoid ASN conflicts or require a specific ASN for routing policies. If your use case involves BGP peering
+and you need a specific ASN for the Amazon side, explicitly set `vpn_gateway_amazon_side_asn`. Otherwise, it can be
+omitted (set to `null`) and AWS will handle it automatically.
+
+
+<!-- markdownlint-disable -->
 ## Requirements
 
 | Name | Version |
@@ -229,10 +213,23 @@ atmos terraform apply site-to-site-vpn -s <stack>
 | <a name="output_vpn_connection_tunnel2_cgw_inside_address"></a> [vpn\_connection\_tunnel2\_cgw\_inside\_address](#output\_vpn\_connection\_tunnel2\_cgw\_inside\_address) | The RFC 6890 link-local address of the second VPN tunnel (Customer Gateway side) |
 | <a name="output_vpn_connection_tunnel2_vgw_inside_address"></a> [vpn\_connection\_tunnel2\_vgw\_inside\_address](#output\_vpn\_connection\_tunnel2\_vgw\_inside\_address) | The RFC 6890 link-local address of the second VPN tunnel (Virtual Private Gateway side) |
 | <a name="output_vpn_gateway_id"></a> [vpn\_gateway\_id](#output\_vpn\_gateway\_id) | Virtual Private Gateway ID |
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
-<!-- prettier-ignore-end -->
+<!-- markdownlint-restore -->
 
-- [cloudposse/terraform-aws-components](https://github.com/cloudposse/terraform-aws-components/tree/main/modules/site-to-site-vpn) -
-  Cloud Posse's upstream component
+
+
+## References
+
+
+- [AWS Site-to-Site VPN](https://aws.amazon.com/vpn/site-to-site-vpn) - 
+
+- [AWS Docs: Site-to-Site VPN](https://docs.aws.amazon.com/vpn/latest/s2svpn/VPC_VPN.html) - 
+
+- [AWS EC2 API: VpnTunnelOptionsSpecification](https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_VpnTunnelOptionsSpecification.html) - 
+
+- [cloudposse/terraform-aws-components: site-to-site-vpn](https://github.com/cloudposse/terraform-aws-components/tree/main/modules/site-to-site-vpn) - Cloud Posse's upstream component
+
+
+
 
 [<img src="https://cloudposse.com/logo-300x69.svg" height="32" align="right"/>](https://cpco.io/homepage?utm_source=github&utm_medium=readme&utm_campaign=cloudposse-terraform-components/aws-site-to-site-vpn&utm_content=)
+
